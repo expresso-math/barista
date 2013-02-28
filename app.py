@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 from flask.ext import restful
 
@@ -18,3 +17,6 @@ class Presidents(restful.Resource):
                 '2': {'name': 'Jefferson, Thomas'} }
 
 api.add_resource(Presidents, '/presidents')
+
+if __name__ == '__main__':
+    app.run(debug=True)
