@@ -1,4 +1,5 @@
 venv
 *.pyc
 uploaded_images/
-uploaded_images/*
+uploaded_images/*.*
+.DS_Store
