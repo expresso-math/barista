@@ -1,6 +1,6 @@
 import os, datetime, md5
 
-from flask import Flask, request
+from flask import Flask, request, make_response
 from flask.ext import restful
 from flask.ext.restful import fields
 
@@ -92,7 +92,7 @@ class Expression(restful.Resource):
         print str(sessions[session_id])
 
         # Create the data for the expression
-        expressions[expression_id] = [] # Empty for now, will be full soon enough.
+        expressions[expression_id] = {} # Empty for now, will be full soon enough.
 
         return expression_id
     # Make it a "Class method"
@@ -103,18 +103,43 @@ class Expression(restful.Resource):
     # Make it a "Class method"
     expression_exists = Callable(expression_exists)
 
+    def has_image(expression_id):
+        return expressions[expression_id].has_key('image')
+    # Make it a "Class method"
+    has_image = Callable(has_image)
+
 class DrawnImage(restful.Resource):
     def get(self, expression_id):
-        return 'This is the image for ' + expression_id + '.'
+        if Expression.expression_exists(expression_id):
+            if Expression.has_image(expression_id):
+                return make_image_response(expression_id)
+            else:
+                return {'message':'Expression does not have an image set, yet.'}, 404
+        else:
+            return {'message':'Expression does not exist.'}, 404
     def post(self, expression_id):
         if Expression.expression_exists(expression_id):
             the_file = request.files['filedata'] # NOTE: Not sure if this will change client to client.
-            image_stream = the_file.stream
-            image = Image.open(image_stream)
-            print image
+            Image.store_image(expression_id, the_file)
             return expression_id, 201
         else:
             return {'message':'Expression does not exist.'}, 404
+
+    def store_image(expression_id, filedata):
+        ## Store the image, for now in our list storage... this will become more robust, I presume.
+        expressions[expression_id]['image'] = filedata.stream
+    store_image = Callable(store_image)
+
+    def make_image_response(expression_id):
+        ## We have an image, so pull out the bits of it and make a response
+        ## with the proper headers so that it downloads.
+        image_stream = expressions[expression_id]['image']
+        response = make_response(image_stream.getvalue())
+        response.headers['Content-Type'] = 'image/png'
+        response.headers['Content-Disposition'] = 'attachment; filename=img.png'
+        return response
+    make_image_response = Callable(make_image_response)
+
 
 class SymbolSet(restful.Resource):
     def get(self, expression_id):
