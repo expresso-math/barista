@@ -37,7 +37,7 @@ class Session(restful.Resource):
     def get(self, session_id=''):
         
         # Setup for the return.
-        return_data = { 'session_name' : '', 'expressions': [] }
+        return_data = { 'session_name' : '', 'expressions': {} }
         name = ''
 
         if session_id:
@@ -61,7 +61,9 @@ class Session(restful.Resource):
         return_data['session_name'] = name
         return_data['expressions'] = sessions[name]
 
-        return return_data
+        print return_data
+
+        return return_data, 201
 
     def add_session(session_id):
         sessions[session_id] = []
@@ -77,7 +79,8 @@ class Expression(restful.Resource):
     def get(self, session_id):
         if Session.session_exists(session_id):
             new_expression = self.add_expression(session_id)
-            return new_expression
+            print new_expression
+            return new_expression, 201
         else:
             return restful.abort(404)
 
@@ -89,12 +92,11 @@ class Expression(restful.Resource):
 
         # Add this expression to the session.
         sessions[session_id].append(expression_id)
-        print str(sessions[session_id])
 
         # Create the data for the expression
         expressions[expression_id] = {} # Empty for now, will be full soon enough.
 
-        return expression_id
+        return {'expression_id': expression_id}
     # Make it a "Class method"
     add_expression = Callable(add_expression)
 
