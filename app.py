@@ -6,7 +6,7 @@ from flask.ext.restful import fields
 
 from werkzeug import secure_filename
 
-# from PIL import Image
+from PIL import Image
 
 import barista_utilities as util
 
@@ -98,18 +98,23 @@ class Expression(restful.Resource):
     # Make it a "Class method"
     add_expression = Callable(add_expression)
 
-class Image(restful.Resource):
+    def expression_exists(expression_id):
+        return expression_id in expressions.keys()
+    # Make it a "Class method"
+    expression_exists = Callable(expression_exists)
+
+class DrawnImage(restful.Resource):
     def get(self, expression_id):
         return 'This is the image for ' + expression_id + '.'
     def post(self, expression_id):
-        the_file = request.files['filedata'] # NOTE: Not sure if this will change client to client.
-        if the_file and allowed_file(the_file.filename):
-            filename = secure_filename(the_file.filename)
-            filenameonly, extension = os.path.splitext(filename)
-            savename = expression_id + extension
-            the_file.save(os.path.join(app.config['UPLOAD_FOLDER'], savename))
-        print 'Posting the given image into ' + expression_id + '\'s data.'
-        return expression_id + '.png Saved.', 201
+        if Expression.expression_exists(expression_id):
+            the_file = request.files['filedata'] # NOTE: Not sure if this will change client to client.
+            image_stream = the_file.stream
+            image = Image.open(image_stream)
+            print image
+            return expression_id, 201
+        else:
+            return {'message':'Expression does not exist.'}, 404
 
 class SymbolSet(restful.Resource):
     def get(self, expression_id):
@@ -130,7 +135,7 @@ class Equation(restful.Resource):
 # Set up resources in API.
 api.add_resource(Session, '/','/session', '/<string:session_id>', '/session/<string:session_id>')
 api.add_resource(Expression, '/<string:session_id>/expression')
-api.add_resource(Image, '/expression/<string:expression_id>/image')
+api.add_resource(DrawnImage, '/expression/<string:expression_id>/image')
 api.add_resource(SymbolSet, '/expression/<string:expression_id>/symbolset')
 api.add_resource(EquationSet, '/expression/<string:expression_id>/equationset')
 api.add_resource(Equation, '/expression/<string:expression_id>/equation')
