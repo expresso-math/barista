@@ -37,7 +37,7 @@ class Session(restful.Resource):
     def get(self, session_id=''):
         
         # Setup for the return.
-        return_data = { 'session_name' : '', 'expressions': {} }
+        return_data = { 'session_name' : '', 'expressions': [] }
         name = ''
 
         if session_id:
@@ -59,7 +59,7 @@ class Session(restful.Resource):
             Session.add_session(name)
 
         return_data['session_name'] = name
-        return_data['expressions'] = sessions[name]
+        return_data['expressions'] = []
 
         print return_data
 
