@@ -1,5 +1,16 @@
 Flask==0.9
 Flask-RESTful==0.1.5
 Jinja2==2.6
+PIL==1.1.7
 Werkzeug==0.8.3
+#boto==2.8.0
+#distribute==0.6.34
+#git-remote-helpers==0.1.0
+#numpy==1.7.0
+#pycrypto==2.6
+requests==1.1.0
+stevedore==0.8
+#virtualenv==1.8.4
+#virtualenv-clone==0.2.4
+#virtualenvwrapper==3.6
 wsgiref==0.1.2
