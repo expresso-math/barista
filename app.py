@@ -1,4 +1,4 @@
-import os, datetime, md5
+import os, datetime, md5, time
 
 from flask import Flask, request, make_response
 from flask.ext import restful
@@ -61,8 +61,6 @@ class Session(restful.Resource):
         return_data['session_name'] = name
         return_data['expressions'] = []
 
-        print return_data
-
         return return_data, 201
 
     def add_session(session_id):
@@ -79,7 +77,6 @@ class Expression(restful.Resource):
     def get(self, session_id):
         if Session.session_exists(session_id):
             new_expression = self.add_expression(session_id)
-            print new_expression
             return new_expression, 201
         else:
             return restful.abort(404)
@@ -114,15 +111,16 @@ class DrawnImage(restful.Resource):
     def get(self, expression_id):
         if Expression.expression_exists(expression_id):
             if Expression.has_image(expression_id):
-                return make_image_response(expression_id)
+                return DrawnImage.make_image_response(expression_id)
             else:
                 return {'message':'Expression does not have an image set, yet.'}, 404
         else:
             return {'message':'Expression does not exist.'}, 404
     def post(self, expression_id):
         if Expression.expression_exists(expression_id):
-            the_file = request.files['filedata'] # NOTE: Not sure if this will change client to client.
-            Image.store_image(expression_id, the_file)
+            the_file = request.files['image'] # NOTE: Not sure if this will change client to client.
+            DrawnImage.store_image(expression_id, the_file)
+            time.sleep(2)
             return expression_id, 201
         else:
             return {'message':'Expression does not exist.'}, 404
@@ -145,7 +143,11 @@ class DrawnImage(restful.Resource):
 
 class SymbolSet(restful.Resource):
     def get(self, expression_id):
-        return 'you got a symbol set!'
+        symbol1 = { 'box': [12.0, 42.0, 100.0, 150.0], 'characters': { 'a' : 0.9, 'b': 0.5 } }
+        symbol2 = { 'box': [152.0, 42.0, 100.0, 150.0], 'characters': { 'x' : 0.4, 'b': 0.1 } }
+        time.sleep(2)
+        symbol_set = { 'symbols': [symbol1, symbol2] }
+        return symbol_set
     def put(self, expression_id):
         return 'you set a symbol set!'
 
