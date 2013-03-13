@@ -3,8 +3,6 @@ Flask-RESTful==0.1.5
 Jinja2==2.6
 PIL==1.1.7
 Werkzeug==0.8.3
-distribute==0.6.34
-numpy==1.7.0
 pycrypto==2.6
 python-dateutil==2.1
 pytz==2012j
@@ -13,7 +11,13 @@ rq==0.3.7
 six==1.2.0
 stevedore==0.8
 times==0.6.1
-virtualenv==1.8.4
-virtualenv-clone==0.2.4
-virtualenvwrapper==3.6
+#distribute==0.6.34
+#git-remote-helpers==0.1.0
+numpy==1.7.0
+#pycrypto==2.6
+requests==1.1.0
+stevedore==0.8
+#virtualenv==1.8.4
+#virtualenv-clone==0.2.4
+#virtualenvwrapper==3.6
 wsgiref==0.1.2

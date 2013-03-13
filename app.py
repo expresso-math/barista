@@ -1,4 +1,4 @@
-import os, datetime, md5
+import os, datetime, md5, time
 
 from flask import Flask, request, make_response
 from flask.ext import restful
@@ -14,6 +14,7 @@ from werkzeug import secure_filename
 
 from PIL import Image
 
+import barista
 import barista_utilities as util
 
 UPLOAD_FOLDER = './uploaded_images'
@@ -41,51 +42,17 @@ class Callable:
 
 class Session(restful.Resource):
     def get(self, session_id=''):
-        
-        # Setup for the return.
-        return_data = { 'session_name' : '', 'expressions': [] }
-        name = ''
-
         if session_id:
-            # A session ID has been defined.
-            if not Session.session_exists(session_id):
-                # The defined session ID does not exist as a current session,
-                # so we make one given the session name.
-                name = session_id
-                Session.add_session(name)
-            else:
-                # The defined session ID does exist already, so we just forward
-                # this to the next step.
-                name = session_id
+            session = barista.Session(session_id)
         else:
-            # No session ID was defined, so we make one up for the client.
-            name = util.generate_session_name()
-            while Session.session_exists(name):
-                name = util.generate_session_name()
-            Session.add_session(name)
-
-        return_data['session_name'] = name
-        return_data['expressions'] = []
-
-        print return_data
-
+            session = barista.Session()
+        return_data = session.get_session_json()
         return return_data, 201
-
-    def add_session(session_id):
-        sessions[session_id] = []
-    # Make it a "Class method"
-    add_session = Callable(add_session)
-
-    def session_exists(session_id):
-        return session_id in sessions
-    # Make it a "Class method"
-    session_exists = Callable(session_exists)
 
 class Expression(restful.Resource):
     def get(self, session_id):
         if Session.session_exists(session_id):
             new_expression = self.add_expression(session_id)
-            print new_expression
             return new_expression, 201
         else:
             return restful.abort(404)
@@ -120,15 +87,16 @@ class DrawnImage(restful.Resource):
     def get(self, expression_id):
         if Expression.expression_exists(expression_id):
             if Expression.has_image(expression_id):
-                return make_image_response(expression_id)
+                return DrawnImage.make_image_response(expression_id)
             else:
                 return {'message':'Expression does not have an image set, yet.'}, 404
         else:
             return {'message':'Expression does not exist.'}, 404
     def post(self, expression_id):
         if Expression.expression_exists(expression_id):
-            the_file = request.files['filedata'] # NOTE: Not sure if this will change client to client.
-            Image.store_image(expression_id, the_file)
+            the_file = request.files['image'] # NOTE: Not sure if this will change client to client.
+            DrawnImage.store_image(expression_id, the_file)
+            time.sleep(2)
             return expression_id, 201
         else:
             return {'message':'Expression does not exist.'}, 404
@@ -151,7 +119,11 @@ class DrawnImage(restful.Resource):
 
 class SymbolSet(restful.Resource):
     def get(self, expression_id):
-        return 'you got a symbol set!'
+        symbol1 = { 'box': [12.0, 42.0, 100.0, 150.0], 'characters': { 'a' : 0.9, 'b': 0.5 } }
+        symbol2 = { 'box': [152.0, 42.0, 100.0, 150.0], 'characters': { 'x' : 0.4, 'b': 0.1 } }
+        time.sleep(2)
+        symbol_set = { 'symbols': [symbol1, symbol2] }
+        return symbol_set
     def put(self, expression_id):
         return 'you set a symbol set!'
 
