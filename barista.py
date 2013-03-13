@@ -42,7 +42,6 @@ class Session:
 
     def __init__(self, identifier=None):
         """ Retrieve the session of identifier and create our object from it """
-        print 'running two-arg init'
         if identifier:
             self.session_identifier = identifier
             self.expressions = r.lrange('session:' + self.session_identifier, 0, -1)
@@ -54,8 +53,6 @@ class Session:
 
     def add_expression(self, expression):
         """ Add the given expression's identifier to our list of expressions for this session. """
-        print self.session_identifier
-        print expression.expression_identifier
         r.rpush('session:' + self.session_identifier, expression.expression_identifier)
 
     def get_most_recent_expression_identifier(self):

@@ -29,20 +29,13 @@ def allowed_file(filename):
 class Session(restful.Resource):
     def get(self, session_id=None):
         try:
-            print 'trying...'
-            print session_id
             if session_id:
-                print 'session_id not blank'
                 session = barista.Session(session_id)
-                print session.session_identifier
             else:
-                print 'session_id is blank'
                 session = barista.Session()
-                print session.session_identifier
             return_data = session.get_session_json()
             return return_data, 201
         except StandardError, e:
-            print e
             return { 'message': 'user-specified session does not exist' }, 404
 
 class Expression(restful.Resource):
