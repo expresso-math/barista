@@ -1,15 +1,19 @@
-import os, datetime, md5, time
+# Python standard imports.
+import os
 
+# Flask imports
 from flask import Flask, request, make_response
 from flask.ext import restful
 from flask.ext.restful import fields
 
+# Filename stuff import for Flask.
 from werkzeug import secure_filename
 
+# Imaging library imports.
 from PIL import Image
 
+# Barista imports.
 import barista
-import barista_utilities as util
 
 UPLOAD_FOLDER = './uploaded_images'
 ALLOWED_EXTENSIONS = set(['png'])
@@ -19,103 +23,64 @@ api = restful.Api(app)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Temporary runtime variables for data. Will be removed once we come up
-# with a more permanent data store.
-sessions = {}
-expressions = {}
-
-AWS_PUBLIC_KEY = 'AKIAJQTURA4O3CYWYPPA'
-AWS_SECRET_KEY = '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'
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-class Callable:
-    def __init__(self, a_callable):
-        self.__call__ = a_callable
-
 class Session(restful.Resource):
-    def get(self, session_id=''):
-        if session_id:
-            session = barista.Session(session_id)
-        else:
-            session = barista.Session()
-        return_data = session.get_session_json()
-        return return_data, 201
+    def get(self, session_id=None):
+        try:
+            print 'trying...'
+            print session_id
+            if session_id:
+                print 'session_id not blank'
+                session = barista.Session(session_id)
+                print session.session_identifier
+            else:
+                print 'session_id is blank'
+                session = barista.Session()
+                print session.session_identifier
+            return_data = session.get_session_json()
+            return return_data, 201
+        except StandardError, e:
+            print e
+            return { 'message': 'user-specified session does not exist' }, 404
 
 class Expression(restful.Resource):
     def get(self, session_id):
-        if Session.session_exists(session_id):
-            new_expression = self.add_expression(session_id)
-            return new_expression, 201
-        else:
-            return restful.abort(404)
-
-    def add_expression(session_id):
-        # Make (a relatively) unique identifier for this expression.
-        now = datetime.datetime.now()
-        m = md5.new(str(now))
-        expression_id = m.hexdigest()
-
-        # Add this expression to the session.
-        sessions[session_id].append(expression_id)
-
-        # Create the data for the expression
-        expressions[expression_id] = {} # Empty for now, will be full soon enough.
-
-        return {'expression_id': expression_id}
-    # Make it a "Class method"
-    add_expression = Callable(add_expression)
-
-    def expression_exists(expression_id):
-        return expression_id in expressions.keys()
-    # Make it a "Class method"
-    expression_exists = Callable(expression_exists)
-
-    def has_image(expression_id):
-        return expressions[expression_id].has_key('image')
-    # Make it a "Class method"
-    has_image = Callable(has_image)
+        try:
+            session = barista.Session(session_id)
+            expression = barista.Expression()
+            session.add_expression(expression)
+            return { 'expression_identifier' : expression.expression_identifier }
+        except StandardError, e:
+            return { 'message': 'User-specified session does not exist.' }, 404
 
 class DrawnImage(restful.Resource):
     def get(self, expression_id):
-        if Expression.expression_exists(expression_id):
-            if Expression.has_image(expression_id):
-                return DrawnImage.make_image_response(expression_id)
-            else:
-                return {'message':'Expression does not have an image set, yet.'}, 404
-        else:
-            return {'message':'Expression does not exist.'}, 404
+        expression = barista.Expression(expression_id)
+        try:
+            image_stream = expression.get_image_for_return()
+            response = make_response(image_stream.getvalue())
+            response.headers['Content-Type'] = 'image/png'
+            response.headers['Content-Disposition'] = 'attachment; filename=img.png'
+            return response
+        except StandardError, e:
+            return { 'message': 'Error retrieving image. Perhaps it doesn\'t exist?' }, 404
+        
     def post(self, expression_id):
-        if Expression.expression_exists(expression_id):
-            the_file = request.files['image'] # NOTE: Not sure if this will change client to client.
-            DrawnImage.store_image(expression_id, the_file)
-            time.sleep(2)
-            return expression_id, 201
-        else:
-            return {'message':'Expression does not exist.'}, 404
-
-    def store_image(expression_id, filedata):
-        ## Store the image, for now in our list storage... this will become more robust, I presume.
-        expressions[expression_id]['image'] = filedata.stream
-    store_image = Callable(store_image)
-
-    def make_image_response(expression_id):
-        ## We have an image, so pull out the bits of it and make a response
-        ## with the proper headers so that it downloads.
-        image_stream = expressions[expression_id]['image']
-        response = make_response(image_stream.getvalue())
-        response.headers['Content-Type'] = 'image/png'
-        response.headers['Content-Disposition'] = 'attachment; filename=img.png'
-        return response
-    make_image_response = Callable(make_image_response)
+        try:
+            image_stream = request.files['image'].stream
+            expression = barista.Expression(expression_id)
+            expression.add_image(image_stream)
+            return 201
+        except StandardError, e:
+            return { 'message': 'Error uploading image to specified expression.' }, 404
 
 
 class SymbolSet(restful.Resource):
     def get(self, expression_id):
         symbol1 = { 'box': [12.0, 42.0, 100.0, 150.0], 'characters': { 'a' : 0.9, 'b': 0.5 } }
-        symbol2 = { 'box': [152.0, 42.0, 100.0, 150.0], 'characters': { 'x' : 0.4, 'b': 0.1 } }
-        time.sleep(2)
+        symbol2 = { 'box': [152.0, 92.0, 200.0, 500.0], 'characters': { 'x' : 0.4, 'b': 0.1 } }
         symbol_set = { 'symbols': [symbol1, symbol2] }
         return symbol_set
     def put(self, expression_id):
