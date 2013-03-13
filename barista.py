@@ -2,8 +2,9 @@ import redis
 import datetime
 import random
 
+database_host = 'localhost'
 
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+r = redis.StrictRedis(host=database_host, port=6379, db=0)
 
 if not r.exists('expression_identifier_ids'):
     r.set('expression_identifier_ids', 1)
