@@ -8,6 +8,7 @@ from werkzeug import secure_filename
 
 from PIL import Image
 
+import barista
 import barista_utilities as util
 
 UPLOAD_FOLDER = './uploaded_images'
@@ -35,43 +36,12 @@ class Callable:
 
 class Session(restful.Resource):
     def get(self, session_id=''):
-        
-        # Setup for the return.
-        return_data = { 'session_name' : '', 'expressions': [] }
-        name = ''
-
         if session_id:
-            # A session ID has been defined.
-            if not Session.session_exists(session_id):
-                # The defined session ID does not exist as a current session,
-                # so we make one given the session name.
-                name = session_id
-                Session.add_session(name)
-            else:
-                # The defined session ID does exist already, so we just forward
-                # this to the next step.
-                name = session_id
+            session = barista.Session(session_id)
         else:
-            # No session ID was defined, so we make one up for the client.
-            name = util.generate_session_name()
-            while Session.session_exists(name):
-                name = util.generate_session_name()
-            Session.add_session(name)
-
-        return_data['session_name'] = name
-        return_data['expressions'] = []
-
+            session = barista.Session()
+        return_data = session.get_session_json()
         return return_data, 201
-
-    def add_session(session_id):
-        sessions[session_id] = []
-    # Make it a "Class method"
-    add_session = Callable(add_session)
-
-    def session_exists(session_id):
-        return session_id in sessions
-    # Make it a "Class method"
-    session_exists = Callable(session_exists)
 
 class Expression(restful.Resource):
     def get(self, session_id):
