@@ -4,6 +4,12 @@ from flask import Flask, request, make_response
 from flask.ext import restful
 from flask.ext.restful import fields
 
+# For RQ stuff:
+from rq import Queue
+from redis import Redis
+redisConn = Redis("ec2-54-244-145-206.us-west-2.compute.amazonaws.com", 6379)
+
+
 from werkzeug import secure_filename
 
 from PIL import Image
