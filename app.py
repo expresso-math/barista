@@ -15,13 +15,8 @@ from PIL import Image
 # Barista imports.
 import barista
 
-UPLOAD_FOLDER = './uploaded_images'
-ALLOWED_EXTENSIONS = set(['png'])
-
 app = Flask(__name__)
 api = restful.Api(app)
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -56,7 +51,6 @@ class DrawnImage(restful.Resource):
             return send_file(image, mimetype='image/png')
             
         except StandardError, e:
-            print 'ERROR: ' + str(e)
             return { 'message': 'Error retrieving image. Perhaps it doesn\'t exist?' }, 404
         
     def post(self, expression_id):

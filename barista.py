@@ -48,8 +48,6 @@ class Session:
         else:
             self.session_identifier = get_unique_session_identifier()
             self.expressions = []
-            r.rpush('session:'+self.session_identifier, 1)
-            r.rpop('session:'+self.session_identifier)
 
     def add_expression(self, expression):
         """ Add the given expression's identifier to our list of expressions for this session. """
