@@ -2,7 +2,7 @@
 import os
 
 # Flask imports
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, send_file
 from flask.ext import restful
 from flask.ext.restful import fields
 
@@ -52,19 +52,18 @@ class DrawnImage(restful.Resource):
     def get(self, expression_id):
         expression = barista.Expression(expression_id)
         try:
-            image_stream = expression.get_image_for_return()
-            response = make_response(image_stream.getvalue())
-            response.headers['Content-Type'] = 'image/png'
-            response.headers['Content-Disposition'] = 'attachment; filename=img.png'
-            return response
+            image = expression.get_image_for_return()
+            return send_file(image, mimetype='image/png')
+            
         except StandardError, e:
+            print 'ERROR: ' + str(e)
             return { 'message': 'Error retrieving image. Perhaps it doesn\'t exist?' }, 404
         
     def post(self, expression_id):
         try:
-            image_stream = request.files['image'].stream
+            image = request.files['image']
             expression = barista.Expression(expression_id)
-            expression.add_image(image_stream)
+            expression.add_image(image)
             return 201
         except StandardError, e:
             return { 'message': 'Error uploading image to specified expression.' }, 404

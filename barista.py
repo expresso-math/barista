@@ -1,5 +1,5 @@
 # Python standard imports
-import datetime, random
+import datetime, random, cStringIO
 
 # Redis imports
 import redis
@@ -160,14 +160,19 @@ class Expression:
             self.image = None
 
     def add_image(self, image):
-        image_key = 'expression_image' + self.expression_identifier
-        r.set(image_key, image.stream)
+        image_key = 'expression_image:' + self.expression_identifier
+        r.set(image_key, image.stream.read())
 
     def get_image_for_return(self):
         image_key = 'expression_image:' + self.expression_identifier
         ## We have an image, so pull out the bits of it and make a response
         ## with the proper headers so that it downloads.
         if r.exists(image_key):
-            return r.get(image_key)
+            stream = r.get(image_key)
+            output = cStringIO.StringIO()
+            output.write(stream)
+            output.seek(0)
+            return output
+
 
            
