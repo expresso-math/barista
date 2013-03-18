@@ -1,13 +1,22 @@
 # Python standard imports
 import datetime, random, cStringIO
 
-# Redis imports
+# Redis & RedisQ imports
 import redis
+import rq
 
 # Barista imports
 from barista_settings import settings
 
+# Roaster imports
+import roaster
+
+## Set up Redis connections.
+rq_connection = redis.Redis(host='ec2-54-244-145-206.us-west-2.compute.amazonaws.com', port=6379, db=0)
 r = redis.StrictRedis(host=settings['redis_hostname'], port=settings['redis_port'], db=settings['redis_db'])
+
+## Set up RQueue.
+q = rq.Queue(connection=rq_connection)
 
 if not r.exists('expression_identifier_ids'):
     r.set('expression_identifier_ids', 1)
@@ -160,6 +169,18 @@ class Expression:
     def add_image(self, image):
         image_key = 'expression_image:' + self.expression_identifier
         r.set(image_key, image.stream.read())
+        ## Seek back to zero.
+        image.stream.seek(0)
+        ## Create our tuple to send.
+        image_tuple = (self.expression_identifier, image.stream.read())
+        ## Enqueue job.
+        symbol_recognition_job = q.enqueue(roaster.identify_symbols, image_tuple)
+        while symbol_recognition_job.result is None:
+            ## Do nothing.
+            pass
+        ## Now we have a result. Do something with it?
+        print symbol_recognition_job.result
+
 
     def get_image_for_return(self):
         image_key = 'expression_image:' + self.expression_identifier
