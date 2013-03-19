@@ -4,7 +4,7 @@ import os
 # Flask imports
 from flask import Flask, request, make_response, send_file
 from flask.ext import restful
-from flask.ext.restful import fields
+from flask.ext.restful import fields, reqparse
 
 # Filename stuff import for Flask.
 from werkzeug import secure_filename
@@ -82,6 +82,22 @@ class Equation(restful.Resource):
     def get(self, expression_id):
         return 'this is an equation!'
 
+class Trainer(restful.Resource):
+    
+    parser = reqparse.RequestParser()
+    parser.add_argument('symbol', type=str)
+
+    def get(self):
+        trainer = barista.TrainingEvent()
+        return trainer.symbol
+    def post(self):
+        args = self.parser.parse_args()
+        symbol = args['symbol']
+        image = request.files['image']
+        trainer = barista.TrainingEvent(symbol)
+        trainer.add_image(image)
+        trainer.send_data()
+
 # Set up resources in API.
 api.add_resource(Session, '/','/session', '/<string:session_id>', '/session/<string:session_id>')
 api.add_resource(Expression, '/<string:session_id>/expression')
@@ -89,6 +105,7 @@ api.add_resource(DrawnImage, '/expression/<string:expression_id>/image')
 api.add_resource(SymbolSet, '/expression/<string:expression_id>/symbolset')
 api.add_resource(EquationSet, '/expression/<string:expression_id>/equationset')
 api.add_resource(Equation, '/expression/<string:expression_id>/equation')
+api.add_resource(Trainer, '/trainer')
 
 # Run the app, getting the proper port from an ENV
 # if set, otherwise defaulting to 5000.

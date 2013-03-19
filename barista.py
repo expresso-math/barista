@@ -173,13 +173,13 @@ class Expression:
         image.stream.seek(0)
         ## Create our tuple to send.
         image_tuple = (self.expression_identifier, image.stream.read())
-        ## Enqueue job.
-        symbol_recognition_job = q.enqueue(roaster.identify_symbols, image_tuple)
-        while symbol_recognition_job.result is None:
-            ## Do nothing.
-            pass
-        ## Now we have a result. Do something with it?
-        print symbol_recognition_job.result
+        # ## Enqueue job. THIS COMING EVENTUALLY.
+        # symbol_recognition_job = q.enqueue(roaster.identify_symbols, image_tuple)
+        # while symbol_recognition_job.result is None:
+        #     ## Do nothing.
+        #     pass
+        # ## Now we have a result. Do something with it?
+        # print symbol_recognition_job.result
 
 
     def get_image_for_return(self):
@@ -193,5 +193,31 @@ class Expression:
             output.seek(0)
             return output
 
+class TrainingEvent:
+    """
+        An event of training. Short-life object, not meant to persist very long.
+        Just long enough to send Roaster the information it contains.
+    """
+    def __init__(self, new_symbol=None):
+        if new_symbol:
+            ## A symbol has been defined, so we can just set our self symbol to that.
+            self.symbol = new_symbol
+            self.image = None
+        else:
+            self.symbol = self.random_symbol()
+            self.image = None
+
+    def add_image(self, new_image):
+        new_image.stream.seek(0)
+        self.image = new_image.stream.read()
+
+    def random_symbol(self):
+        return '0'
+
+    def send_data(self):
+        print 'SENDING DATA, particularly ' + self.symbol + ' and its image whose length is ' + str(self.image.__len__())
+        print 'Well, not really, but we will when we want to!' 
+        # image_tuple = (self.symbol, self.image)
+        # job = q.enqueue(roaster.learn_symbol, image_tuple)
 
            
