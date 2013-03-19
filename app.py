@@ -89,7 +89,7 @@ class Trainer(restful.Resource):
 
     def get(self):
         trainer = barista.TrainingEvent()
-        return trainer.symbol
+        return { 'symbol' : trainer.symbol }, 201
     def post(self):
         args = self.parser.parse_args()
         symbol = args['symbol']
