@@ -1,5 +1,6 @@
 # Python standard imports.
 import os
+import time
 
 # Flask imports
 from flask import Flask, request, make_response, send_file
@@ -68,6 +69,7 @@ class SymbolSet(restful.Resource):
         symbol1 = { 'box': [12.0, 42.0, 100.0, 150.0], 'characters': { 'a' : 0.9, 'b': 0.5 } }
         symbol2 = { 'box': [152.0, 92.0, 200.0, 500.0], 'characters': { 'x' : 0.4, 'b': 0.1 } }
         symbol_set = { 'symbols': [symbol1, symbol2] }
+        time.sleep(20)
         return symbol_set
     def put(self, expression_id):
         return 'you set a symbol set!'
@@ -83,7 +85,7 @@ class Equation(restful.Resource):
         return 'this is an equation!'
 
 class Trainer(restful.Resource):
-    
+
     parser = reqparse.RequestParser()
     parser.add_argument('symbol', type=str)
 
