@@ -13,3 +13,8 @@ def identify_symbols(expression_id):
     """
     Send tuple of expression identifier and binary image file and save it on the server as a PNG
     """
+
+def train(imageData, asciiValue):
+	"""
+	Uh, train.
+	"""
