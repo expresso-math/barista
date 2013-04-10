@@ -84,13 +84,13 @@ class SymbolSet(restful.Resource):
 		except Exception, e:
 			return { 'message': 'Error getting symbol set for specified expression. Could be a bad ID or no symbols.'}, 500
 
-	def put(self, expression_id):
+	def post(self, expression_id):
 		return 'you set a symbol set!'
 
 class EquationSet(restful.Resource):
 	def get(self, expression_id):
 		return 'you got a equation set!'
-	def put(self, expression_id):
+	def post(self, expression_id):
 		return 'you set a equation set!'
 
 class Equation(restful.Resource):

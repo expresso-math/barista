@@ -16,6 +16,8 @@ from barista_settings import settings
 # Import roaster, for RQ-mirroring ability.
 import roaster
 
+import ascii
+
 # Set up Redis connections.
 rq_connection = redis.Redis(host=settings['rq_hostname'], port=settings['rq_port'], db=settings['rq_db'])
 r = redis.StrictRedis(host=settings['redis_hostname'], port=settings['redis_port'], db=settings['redis_db'])
@@ -336,10 +338,7 @@ class TrainingEvent:
 		self.image = new_image.stream.read()
 
 	def random_symbol(self):
-		return '0'
+		return ascii.get_random()
 
 	def send_data(self):
-		print 'SENDING DATA, particularly ' + self.symbol + ' and its image whose length is ' + str(self.image.__len__())
-		print 'Well, not really, but we will when we want to!' 
-		# image_tuple = (self.symbol, self.image)
-		# job = q.enqueue(roaster.learn_symbol, image_tuple)
+		job = q.enqueue(roaster.train, self.image, self.symbol)
