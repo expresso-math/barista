@@ -79,6 +79,7 @@ class SymbolSet(restful.Resource):
 		expression = barista.Expression()
 		try:
 			expression.load_existing(expression_id)
+			expression.identify_symbols()
 			return expression.compose_json_symbols()
 		except Exception, e:
 			return { 'message': 'Error getting symbol set for specified expression. Could be a bad ID or no symbols.'}

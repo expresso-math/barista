@@ -9,7 +9,7 @@ Daniel Guilak <daniel.guilak@gmail.com> and Josef Lange <josef.d.lange@gmail.com
 Expresso
 """
 
-def identify_symbols(image_tuple):
+def identify_symbols(expression_id):
     """
     Send tuple of expression identifier and binary image file and save it on the server as a PNG
     """

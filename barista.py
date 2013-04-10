@@ -161,7 +161,7 @@ class Expression:
 	def load_existing(self, expression_identifier, should_load_image=False):
 		if r.exists('expression_symbols:' + str(expression_identifier)):
 			self.expression_identifier = expression_identifier
-			self.symbols = r.lrange('expression_symbols:' + str(self.expression_identifier))
+			self.symbols = r.lrange('expression_symbols:' + str(self.expression_identifier), 0, -1)
 			if r.exists('expression_image:' + str(expression_identifier)) and should_load_image:
 				## Image exists, grab it, if we are commanded to.
 				print "Is this the real life?"
@@ -182,14 +182,17 @@ class Expression:
 			self.image = image.stream.read()
 		else:
 			raise Exception('Image is already set. Cannot be reset.')
-		# ## Enqueue job. THIS COMING EVENTUALLY.
-		# symbol_recognition_job = q.enqueue(roaster.identify_symbols, image_tuple)
-		# while symbol_recognition_job.result is None:
-		#     ## Do nothing.
-		#     pass
-		# ## Now we have a result. Do something with it?
-		# print symbol_recognition_job.result
 		self.dirty = True
+
+	def identify_symbols(self):
+		# ## Enqueue job. THIS COMING EVENTUALLY.
+		symbol_identification_job = q.enqueue(roaster.identify_symbols, self.expression_identifier)
+		while symbol_identification_job.result is None:
+		    ##Do nothing.
+		    pass
+		## Now we have a result. Do something with it?
+		self.load_existing(self.expression_identifier)
+
 
 	def save_data(self):
 		if self.dirty:
