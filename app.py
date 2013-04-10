@@ -71,7 +71,7 @@ class DrawnImage(restful.Resource):
 			expression.save_data()
 			return 201
 		except Exception, e:
-			return { 'message': 'Error uploading image to specified expression.' }, 404
+			return { 'message': 'Error uploading image to specified expression.' }, 500
 
 
 class SymbolSet(restful.Resource):
@@ -82,7 +82,7 @@ class SymbolSet(restful.Resource):
 			expression.identify_symbols()
 			return expression.compose_json_symbols()
 		except Exception, e:
-			return { 'message': 'Error getting symbol set for specified expression. Could be a bad ID or no symbols.'}
+			return { 'message': 'Error getting symbol set for specified expression. Could be a bad ID or no symbols.'}, 500
 
 	def put(self, expression_id):
 		return 'you set a symbol set!'

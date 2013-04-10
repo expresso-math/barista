@@ -5,7 +5,7 @@
 ### automatic -- Barista should require committing of changes.
 
 # Python standard imports for use in this module.
-import datetime, random, cStringIO
+import datetime, random, cStringIO, time
 
 # Redis, RedisQ
 import redis, rq
@@ -187,10 +187,15 @@ class Expression:
 	def identify_symbols(self):
 		# ## Enqueue job. THIS COMING EVENTUALLY.
 		symbol_identification_job = q.enqueue(roaster.identify_symbols, self.expression_identifier)
-		while symbol_identification_job.result is None:
+		start_time = time.time()
+		timeout = 10
+		while symbol_identification_job.result is None and time.time() < (start_time + timeout):
 		    ##Do nothing.
 		    pass
 		## Now we have a result. Do something with it?
+		if time.time() >= (start_time + timeout) :
+			## We failed! THROW AN ERROR!
+			raise Exception('Symbol Recognition timed out...')
 		self.load_existing(self.expression_identifier)
 
 
