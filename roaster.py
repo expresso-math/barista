@@ -28,3 +28,8 @@ def load_data():
 	"""
 	Load load_data
 	"""
+
+def reset():
+	"""
+	reset neural network
+	"""

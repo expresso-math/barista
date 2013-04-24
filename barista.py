@@ -348,3 +348,5 @@ class Utility:
 		job = q.enqueue(roaster.run_training)
 	def load(self):
 		job = q.enqueue(roaster.load_data)
+	def reset(self):
+		job = q.enqueue(roaster.reset)

@@ -122,6 +122,9 @@ class Utility(restful.Resource):
 		elif method == 'train':
 			print 'training'
 			u.train()
+		elif method == 'reset':
+			print 'resetting'
+			u.reset()
 		else:
 			print 'failing'
 			return 500
