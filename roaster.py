@@ -18,3 +18,13 @@ def train(imageData, asciiValue):
 	"""
 	Uh, train.
 	"""
+
+def run_training():
+	"""
+	Run a training event.
+	"""
+
+def load_data():
+	"""
+	Load load_data
+	"""

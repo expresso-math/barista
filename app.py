@@ -113,6 +113,20 @@ class Trainer(restful.Resource):
 		trainer.add_image(image)
 		trainer.send_data()
 
+class Utility(restful.Resource):
+	def get(self, method):
+		u = barista.Utility()
+		if method == 'load':
+			print 'loading'
+			u.load()
+		elif method == 'train':
+			print 'training'
+			u.train()
+		else:
+			print 'failing'
+			return 500
+		return 200
+
 # Set up resources in API.
 api.add_resource(Session, '/','/session', '/<string:session_id>', '/session/<string:session_id>')
 api.add_resource(Expression, '/<string:session_id>/expression')
@@ -121,6 +135,7 @@ api.add_resource(SymbolSet, '/expression/<string:expression_id>/symbolset')
 api.add_resource(EquationSet, '/expression/<string:expression_id>/equationset')
 api.add_resource(Equation, '/expression/<string:expression_id>/equation')
 api.add_resource(Trainer, '/trainer')
+api.add_resource(Utility, '/utility/<string:method>')
 
 # Run the app, getting the proper port from an ENV
 # if set, otherwise defaulting to 5000.

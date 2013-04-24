@@ -342,3 +342,9 @@ class TrainingEvent:
 
 	def send_data(self):
 		job = q.enqueue(roaster.train, self.image, self.symbol)
+
+class Utility:
+	def train(self):
+		job = q.enqueue(roaster.run_training)
+	def load(self):
+		job = q.enqueue(roaster.load_data)
