@@ -240,11 +240,19 @@ class Expression:
 				symbols = { }
 				for pair in s.possible_symbols:
 					symbols[pair[0]] = pair[1]
-				symbol_data.append( { 'box':box, 'symbols':symbols } )
+				symbol_data.append( { 'identifier':symbol_identifier, 'box':box, 'symbols':symbols } )
 			except Exception, e:
 				pass
 				# EXPLODE
 		return { 'symbols': symbol_data }
+
+	def set_symbols(self, symbol_dict):
+		for symbol_identifier in self.symbols:
+			if symbol_identifier in symbol_dict:
+				s = Symbol()
+				s.load_existing(symbol_identifier)
+				s.set_possible_symbols([(str(symbol_dict[symbol_identifier]), 1.0)])
+				s.save_data()
 
 class Symbol:
 	"""
@@ -305,15 +313,10 @@ class Symbol:
 		candidates_key = 'symbol_candidates:' + self.symbol_identifier
 		if self.dirty:
 			if not self.bounding_box == [int(x) for x in r.lrange(box_key, 0, -1)]:
-				r.delete(box_key)
-				[r.rpush(x) for x in self.bounding_box]
-			else:
-				pass
-				# Do nothing; bounding boxes match.
-			saved_symbols = r.zrange(candidates_key, 0, -1, withscores=True)
+				[r.rpush(box_key, x) for x in self.bounding_box]
+			r.delete(candidates_key)
 			for symbol_pair in self.possible_symbols:
-				if symbol_pair not in saved_symbols:
-					r.zadd(candidates_key, symbol_pair[1], symbol_pair[0])
+				r.zadd(candidates_key, symbol_pair[1], symbol_pair[0])
 			self.dirty = False
 		else:
 			# Nothing to save!

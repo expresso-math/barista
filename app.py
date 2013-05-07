@@ -85,7 +85,14 @@ class SymbolSet(restful.Resource):
 			return { 'message': 'Error getting symbol set for specified expression. Could be a bad ID or no symbols.'}, 500
 
 	def post(self, expression_id):
-		return 'you set a symbol set!'
+		expression = barista.Expression()
+		try:
+			expression.load_existing(expression_id)
+			dict_of_symbols = request.json
+			expression.set_symbols(dict_of_symbols)
+			return { 'message': 'Symbols successfully updated.' }, 200
+		except Exception, e:
+			return { 'message': 'The Expression or Symbols specified does not exist.'}, 500
 
 class EquationSet(restful.Resource):
 	def get(self, expression_id):
