@@ -1,6 +1,7 @@
 # Python standard imports.
 import os
 import time
+import cStringIO
 
 # Flask imports
 from flask import Flask, request, make_response, send_file
@@ -15,6 +16,9 @@ from PIL import Image
 
 # Barista imports.
 import barista
+
+# Mathtex
+from mathtex.mathtex_main import Mathtex
 
 app = Flask(__name__)
 api = restful.Api(app)
@@ -96,13 +100,20 @@ class SymbolSet(restful.Resource):
 
 class EquationSet(restful.Resource):
 	def get(self, expression_id):
-		return 'you got a equation set!'
+		tex = '$3x+2$'
+		Mathtex(tex, 'stix', 72, 72).save('tmp.png')
+		return { 'tex' : '$3x+2$' } 
 	def post(self, expression_id):
 		return 'you set a equation set!'
 
 class Equation(restful.Resource):
 	def get(self, expression_id):
 		return 'this is an equation!'
+
+class EquationImage(restful.Resource):
+	def get(self, expression_id):
+		stream = open('tmp.png', 'r')
+		return send_file(stream, mimetype='image/png')
 
 class Trainer(restful.Resource):
 
@@ -143,6 +154,7 @@ api.add_resource(Expression, '/<string:session_id>/expression')
 api.add_resource(DrawnImage, '/expression/<string:expression_id>/image')
 api.add_resource(SymbolSet, '/expression/<string:expression_id>/symbolset')
 api.add_resource(EquationSet, '/expression/<string:expression_id>/equationset')
+api.add_resource(EquationImage, '/expression/<string:expression_id>/equationimage')
 api.add_resource(Equation, '/expression/<string:expression_id>/equation')
 api.add_resource(Trainer, '/trainer')
 api.add_resource(Utility, '/utility/<string:method>')
